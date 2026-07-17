@@ -43,7 +43,7 @@ patch -p3 < patches/CraftItemPacket-7.0-security.patch
 ## Disclosure
 
 - Audit: [exploit-mffs RPG Edition audit](https://github.com/Sweizeur/exploit-mffs/blob/main/security-audit/rpg-edition/reports/RPG_EDITION_AUDIT.md)
-- Issue opened: [PoyrazPKG/PKG-TEAM#…](https://github.com/PoyrazPKG/PKG-TEAM/issues)
+- Issue opened: [PoyrazPKG/PKG-TEAM#1](https://github.com/PoyrazPKG/PKG-TEAM/issues/1)
 
 ## License note
 
