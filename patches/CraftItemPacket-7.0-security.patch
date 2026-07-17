@@ -1,0 +1,65 @@
+--- reference/CraftItemPacket.java	2026-07-17 19:12:14.250188725 +0000
++++ patched/CraftItemPacket.java	2026-07-17 19:12:29.758170238 +0000
+@@ -32,26 +32,27 @@
+       context.enqueueWork(() -> {
+          if (context.player() != null) {
+             Player player = context.player();
+-            Item item = (Item)BuiltInRegistries.ITEM.get(packet.itemId());
++            Item item = BuiltInRegistries.ITEM.get(packet.itemId());
++            if (item == null || item == Items.AIR) {
++               return;
++            }
+             long lastCraftTime = player.getPersistentData().getLong("LastCraftTime");
+             long currentTime = System.currentTimeMillis();
+-            if (currentTime - lastCraftTime < 4000L) {
++            if (currentTime - lastCraftTime < COOLDOWN_PERIOD_MS) {
+                player.displayClientMessage(Component.literal("Lütfen bekleyin!"), false);
+                return;
+             }
+ 
+-            if (hasRequiredMaterials(player, item)) {
+-               removeMaterials(player, item);
+-               player.getPersistentData().putLong("LastCraftTime", currentTime);
+-               context.player().getServer().execute(() -> {
+-                  try {
+-                     Thread.sleep(4000L);
+-                  } catch (InterruptedException var3x) {
+-                     var3x.printStackTrace();
+-                  }
++            List<ItemStack> materials = getRequiredMaterials(item);
++            if (materials.isEmpty()) {
++               player.displayClientMessage(Component.literal("Malzemeler eksik!"), false);
++               return;
++            }
+ 
+-                  player.getInventory().add(new ItemStack(item));
+-               });
++            if (hasRequiredMaterials(player, materials)) {
++               removeMaterials(player, materials);
++               player.getPersistentData().putLong("LastCraftTime", currentTime);
++               player.getInventory().add(new ItemStack(item));
+             } else {
+                player.displayClientMessage(Component.literal("Malzemeler eksik!"), false);
+             }
+@@ -59,8 +60,8 @@
+       });
+    }
+ 
+-   private static boolean hasRequiredMaterials(Player player, Item item) {
+-      for (ItemStack material : getRequiredMaterials(item)) {
++   private static boolean hasRequiredMaterials(Player player, List<ItemStack> materials) {
++      for (ItemStack material : materials) {
+          int requiredAmount = material.getCount();
+          int availableAmount = 0;
+ 
+@@ -78,8 +79,8 @@
+       return true;
+    }
+ 
+-   private static void removeMaterials(Player player, Item item) {
+-      for (ItemStack stack : getRequiredMaterials(item)) {
++   private static void removeMaterials(Player player, List<ItemStack> materials) {
++      for (ItemStack stack : materials) {
+          int count = stack.getCount();
+ 
+          for (int i = 0; i < player.getInventory().getContainerSize() && count > 0; i++) {
